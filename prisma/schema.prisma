@@ -14,9 +14,12 @@ model User {
   id        Int      @id @default(autoincrement())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  email     String
+  email     String   @unique
   hash      String
-  userName  String
+  userName  String   @unique
+  tasks     Task[]
+
+  @@map("users")
 }
 
 model Task {
@@ -25,4 +28,9 @@ model Task {
   updatedAt DateTime @updatedAt
   text      String
   isDone    Boolean  @default(false)
+
+  userId Int
+  user   User @relation(fields: [userId], references: [id])
+
+  @@map("tasks")
 }
