@@ -10,5 +10,15 @@ services:
       POSTGRES_DB: todolist
     networks:
       - mytodolist
+  test-db:
+    image: postgres:13
+    ports:
+      - 5435:5432
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 123
+      POSTGRES_DB: todolist
+    networks:
+      - mytodolist
 networks:
   mytodolist:
