@@ -13,4 +13,9 @@ export class PrismaService extends PrismaClient {
       },
     });
   }
+
+  cleanDb() {
+    // uso transaction per cancellare le tabelle in ordine
+    return this.$transaction([this.task.deleteMany(), this.user.deleteMany()]);
+  }
 }
