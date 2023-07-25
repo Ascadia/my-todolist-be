@@ -4,6 +4,7 @@ import { AppModule } from '../src/app.module';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { PrismaService } from '../src/prisma/prisma.service';
 import { SigninDto, SignupDto } from '../src/auth/dto';
+import { EditUserDto } from '../src/user/dto';
 
 describe('App e2e', () => {
   let app: INestApplication;
@@ -109,17 +110,50 @@ describe('App e2e', () => {
         return pactum.spec().post('/auth/signin').expectStatus(400);
       });
       it('should signin', () => {
-        return pactum
-          .spec()
-          .post('/auth/signin')
-          .withBody(dto)
-          .expectStatus(200);
+        return (
+          pactum
+            .spec()
+            .post('/auth/signin')
+            .withBody(dto)
+            .expectStatus(200)
+            // salva variabile nello store di pactum
+            .stores('userAt', 'access_token')
+        );
       });
     });
   });
   describe('User', () => {
-    describe('Get me', () => {});
-    describe('Edit user', () => {});
+    describe('Get me', () => {
+      it('should get current user', () => {
+        return (
+          pactum
+            .spec()
+            .get('/users/me')
+            // inietta la variabile pactum salvata precedentemente
+            .withHeaders('Authorization', `Bearer $S{userAt}`)
+            .expectStatus(200)
+        );
+      });
+    });
+    describe('Edit user', () => {
+      it('should edit user', () => {
+        const dto: EditUserDto = {
+          userName: 'Matteooo',
+          email: 'matteo2@fake.com',
+        };
+
+        return pactum
+          .spec()
+          .patch('/users')
+          .withHeaders({
+            Authorization: 'Bearer $S{userAt}',
+          })
+          .withBody(dto)
+          .expectStatus(200)
+          .expectBodyContains(dto.email)
+          .expectBodyContains(dto.userName);
+      });
+    });
   });
   describe('Task', () => {
     describe('Create task', () => {});
