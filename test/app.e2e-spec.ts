@@ -5,6 +5,7 @@ import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { PrismaService } from '../src/prisma/prisma.service';
 import { SigninDto, SignupDto } from '../src/auth/dto';
 import { EditUserDto } from '../src/user/dto';
+import { CreateTaskDto, EditTaskDto } from '../src/task/dto';
 
 describe('App e2e', () => {
   let app: INestApplication;
@@ -156,10 +157,100 @@ describe('App e2e', () => {
     });
   });
   describe('Task', () => {
-    describe('Create task', () => {});
-    describe('Get task', () => {});
-    describe('Get task by id', () => {});
-    describe('Edit task', () => {});
-    describe('Delete task', () => {});
+    describe('Get empty tasks', () => {
+      it('should get tasks', () => {
+        return pactum
+          .spec()
+          .get('/tasks')
+          .withHeaders({
+            Authorization: 'Bearer $S{userAt}',
+          })
+          .expectStatus(200)
+          .expectBody([]);
+      });
+    });
+    describe('Create task', () => {
+      const dto: CreateTaskDto = {
+        text: 'First task',
+      };
+      it('should create task', () => {
+        return pactum
+          .spec()
+          .post('/tasks')
+          .withHeaders({
+            Authorization: 'Bearer $S{userAt}',
+          })
+          .withBody(dto)
+          .expectStatus(201)
+          .stores('taskId', 'id');
+      });
+    });
+    describe('Get task', () => {
+      it('should get tasks', () => {
+        return pactum
+          .spec()
+          .get('/tasks')
+          .withHeaders({
+            Authorization: 'Bearer $S{userAt}',
+          })
+          .expectStatus(200)
+          .expectJsonLength(1);
+      });
+    });
+    describe('Get task by id', () => {
+      it('should get task by id', () => {
+        return pactum
+          .spec()
+          .get('/tasks/{id}')
+          .withPathParams('id', '$S{taskId}')
+          .withHeaders({
+            Authorization: 'Bearer $S{userAt}',
+          })
+          .expectStatus(200)
+          .expectBodyContains('$S{taskId}');
+      });
+    });
+    describe('Edit task', () => {
+      const dto: EditTaskDto = {
+        isDone: true,
+        text: 'test1',
+      };
+      it('should edit task', () => {
+        return pactum
+          .spec()
+          .patch('/tasks/{id}')
+          .withPathParams('id', '$S{taskId}')
+          .withBody(dto)
+          .withHeaders({
+            Authorization: 'Bearer $S{userAt}',
+          })
+          .expectStatus(200)
+          .expectBodyContains('$S{taskId}')
+          .expectBodyContains(dto.text)
+          .expectBodyContains(dto.isDone);
+      });
+    });
+    describe('Delete task', () => {
+      it('should delete task', () => {
+        return pactum
+          .spec()
+          .delete('/tasks/{id}')
+          .withPathParams('id', '$S{taskId}')
+          .withHeaders({
+            Authorization: 'Bearer $S{userAt}',
+          })
+          .expectStatus(204);
+      });
+      it('should get empty tasks', () => {
+        return pactum
+          .spec()
+          .get('/tasks')
+          .withHeaders({
+            Authorization: 'Bearer $S{userAt}',
+          })
+          .expectStatus(200)
+          .expectJsonLength(0);
+      });
+    });
   });
 });
