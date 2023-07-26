@@ -24,13 +24,12 @@ export class TaskService {
   }
 
   async createTask(userId: number, dto: CreateTaskDto) {
-    const bookmark = await this.prisma.task.create({
+    return await this.prisma.task.create({
       data: {
         userId,
         ...dto,
       },
     });
-    return bookmark;
   }
 
   async editTaskById(userId: number, taskId: number, dto: EditTaskDto) {
